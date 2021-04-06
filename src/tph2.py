@@ -124,7 +124,7 @@ def proj_factor(z, img):
     return factor
 
 
-def master_tile(data, img, z, dot_size=None):
+def master_tile(data, img, hex_code, z, dot_size=None):
     """
     makes the map at zoom level = z to be broken down into tiles
     :param zoom_level:
@@ -136,7 +136,7 @@ def master_tile(data, img, z, dot_size=None):
 
     scene = ds.Canvas(x_range=[0, dim], y_range=[0, dim], plot_width=dim, plot_height=dim)
     aggregation = scene.points(proj_data, 'x', 'y')
-    image = tf.shade(aggregation, cmap=["#FF0000"], alpha=100)
+    image = tf.shade(aggregation, cmap=[hex_code], alpha=100)
     if dot_size:
         image = tf.spread(image, px=1, shape='circle', name="spread square")
     export_image(image, 'master_tile', background=None)
@@ -159,7 +159,12 @@ def manifest(cfg):
     return bbox, img_shape
 
 
-def tile_generator(gene, z):
+def get_color(gene):
+    hex = [d["color"] for d in glyphsConfig['settings'] if d['gene'] == gene][0]
+    return hex
+
+
+def tile_generator(gene, dot_color, z):
     cfg = config.DEFAULT
     bbox, img_shape = manifest(cfg)
     Tph2_data = load_data()
@@ -168,13 +173,18 @@ def tile_generator(gene, z):
     _y = Tph2_data.global_y.apply(ty).values
     point_px = pd.DataFrame({'x': _x,
                              'y': _y})
-    mt = master_tile(point_px, img_shape, z)
+    mt = master_tile(point_px, img_shape, dot_color, z)
 
     tile_maker(z, 'pyramid', 'master_tile.png', z_depth='one')
 
 
 if __name__ == "__main__":
-    tile_generator('gene', 1)
+    with open(r"glyphConfig.json") as f:
+        glyphsConfig = json.load(f)
+
+    gene = 'Tph2'
+    hex_code = get_color(gene)
+    tile_generator(gene, "#00FF00", 1)
 
 
     print('ok')
