@@ -45,8 +45,11 @@
 
     var map_tiles = 'https://raw.githubusercontent.com/acycliq/VS6_MsBrain_A3_maptiles/master/maptiles/262144px/z3/{z}/{y}/{x}.jpg';
 
-    var dapiLayer = L.tileLayer(map_tiles, {minZoom: 0, maxZoom: 8});
-    var npyLayer = L.tileLayer('./src/pyramid/{z}/{y}/{x}.png', {minZoom: 0, maxZoom: 8,});
+    var minZoom = 0,
+        maxZoom = 8;
+    var dapiLayer = L.tileLayer(map_tiles, {minZoom: minZoom, maxZoom: maxZoom});
+    var Tph2Layer = L.tileLayer('./src/pyramid/Tph2/{z}/{y}/{x}.png', {minZoom: minZoom, maxZoom: maxZoom});
+    var Slc1a2Layer = L.tileLayer('./src/pyramid/Slc1a2/{z}/{y}/{x}.png', {minZoom: minZoom, maxZoom: maxZoom});
 
     map = L.map('mymap', {
         layers: [dapiLayer],
@@ -54,12 +57,16 @@
         attributionControl: false,
     }).setView([img[1], img[0] / 2], 2);
 
+    map.addLayer(Tph2Layer);
+    map.addLayer(Slc1a2Layer);
+
     var baseLayers = {
         "Dapi image": dapiLayer,
     };
 
     var overlayMaps = {
-        "Npy": npyLayer
+        "Tph2": Tph2Layer,
+        "Slc1a2": Slc1a2Layer,
     };
 
     L.control.layers(baseLayers, overlayMaps, {collapsed: false}).addTo(map);

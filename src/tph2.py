@@ -73,25 +73,36 @@ def tile_maker(zoom_levels, out_dir, img_path, z_depth='onetile'):
     return pixel_dims
 
 
-def load_data():
+def load_data(gene):
     cfg = config.DEFAULT
 
-    # read the spots from the raw files
-    cached_file = os.path.join(config.ROOT, 'src', 'parquet', 'Tph2_data.parquet.gzip')
-    if Path(cached_file).is_file():
-        logger.info('Loading cached file from %s' % cached_file)
-        Tph2_data = pd.read_parquet(cached_file)
-    else:
-        spots_path = cfg['detected_transcripts']
-        logger.info('Reading raw data from %s' % spots_path)
-        chunks = pd.read_csv(spots_path, chunksize=100000)
-        data = pd.concat(chunks)
-        Tph2_data = data[data.gene == 'Tph2'][['gene', 'global_x', 'global_y']]
+    spots_path = cfg['detected_transcripts']
+    logger.info('Reading raw data from %s' % spots_path)
+    chunks = pd.read_csv(spots_path, chunksize=100000)
+    data = pd.concat(chunks)
+    gene_data = data[data.gene == gene][['gene', 'global_x', 'global_y']]
+    return gene_data
 
-        target_file = os.path.join(config.ROOT, 'src', 'parquet', 'Tph2_data.parquet.gzip')
-        Tph2_data.to_parquet(target_file, compression='gzip')
-        logger.info('File save at %s' % target_file)
-    return Tph2_data
+#
+# def load_data():
+#     cfg = config.DEFAULT
+#
+#     # read the spots from the raw files
+#     cached_file = os.path.join(config.ROOT, 'src', 'parquet', 'Tph2_data.parquet.gzipXX')
+#     if Path(cached_file).is_file():
+#         logger.info('Loading cached file from %s' % cached_file)
+#         Tph2_data = pd.read_parquet(cached_file)
+#     else:
+#         spots_path = cfg['detected_transcripts']
+#         logger.info('Reading raw data from %s' % spots_path)
+#         chunks = pd.read_csv(spots_path, chunksize=100000)
+#         data = pd.concat(chunks)
+#         Tph2_data = data[data.gene == 'Tph2'][['gene', 'global_x', 'global_y']]
+#
+#         target_file = os.path.join(config.ROOT, 'src', 'parquet', 'Tph2_data.parquet.gzip')
+#         Tph2_data.to_parquet(target_file, compression='gzip')
+#         logger.info('File save at %s' % target_file)
+#     return Tph2_data
 
 
 def transformation(bbox, img):
@@ -167,10 +178,10 @@ def get_color(gene):
 def tile_generator(gene, dot_color, z, dot_size=None):
     cfg = config.DEFAULT
     bbox, img_shape = manifest(cfg)
-    Tph2_data = load_data()
+    gene_data = load_data(gene)
     tx, ty = transformation(bbox, img_shape)
-    _x = Tph2_data.global_x.apply(tx).values
-    _y = Tph2_data.global_y.apply(ty).values
+    _x = gene_data.global_x.apply(tx).values
+    _y = gene_data.global_y.apply(ty).values
     point_px = pd.DataFrame({'x': _x,
                              'y': _y})
     mt = master_tile(point_px, img_shape, dot_color, z, dot_size)
@@ -182,9 +193,10 @@ if __name__ == "__main__":
     with open(r"glyphConfig.json") as f:
         glyphsConfig = json.load(f)
 
-    gene = 'Tph2'
+    # gene = 'Tph2'
+    gene = 'Slc1a2'
     hex_code = get_color(gene)
-    tile_generator(gene, "#0000FF", 1, 3)
+    tile_generator(gene, hex_code, 7, None)
 
 
     print('ok')
