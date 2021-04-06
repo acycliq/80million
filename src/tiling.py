@@ -34,8 +34,6 @@ def map_size(z):
 
 
 def tile_maker(zoom_levels, out_dir, img_path, z_depth='onetile'):
-    # img_path = os.path.join(dir_path, 'demo_data', 'background_boundaries.tif')
-
     dim = map_size(zoom_levels)
     # remove the dir if it exists
     # if os.path.exists(out_dir):
@@ -151,9 +149,13 @@ def get_color(gene):
     hex = [d["color"] for d in glyphsConfig['settings'] if d['gene'] == gene][0]
     return hex
 
+def get_genes(glyphsConfig):
+    gene_list = [d["gene"] for d in glyphsConfig['settings']]
+    return sorted(gene_list)
+
 
 def tile_generator(gene, opts, z):
-    target_dir = 'pyramid'
+    target_dir = os.path.join(config.ROOT, 'src', 'pyramid', gene)
     cfg = config.DEFAULT
     bbox, img_shape = manifest(cfg)
     gene_data = load_data(gene, cfg)
@@ -180,24 +182,29 @@ def get_alpha(z):
     if z == 0:
         alpha = 50
     elif z <= 4:
-        alpha = 50
+        alpha = 60
     else:
         alpha = 100
     return alpha
 
 
 if __name__ == "__main__":
-    with open(r".\glyphConfig.json") as f:
+    glyph_json = os.path.join(config.ROOT, 'src', 'glyphConfig.json')
+    with open(glyph_json) as f:
         glyphsConfig = json.load(f)
 
     # gene = 'Tph2'
     # gene = 'Nos1'
     gene = 'Slc1a2'
     hex_code = get_color(gene)
-    opts = {'dot_size': None,
-            'dot_color': get_color(gene),
-            'dot_alpha': get_alpha}
-    for i in range(8):
-        tile_generator(gene, opts, i)
+
+    gene_list = get_genes(glyphsConfig)
+    for gene in gene_list:
+        logger.info('Doing tiles for gene: %s' % gene)
+        opts = {'dot_size': None,
+                'dot_color': get_color(gene),
+                'dot_alpha': get_alpha}
+        for i in range(8):
+            tile_generator(gene, opts, i)
 
     print('ok')
