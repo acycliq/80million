@@ -5,9 +5,6 @@ function dapi(cfg) {
         map_tiles = cfg.tiles,
         roi = cfg.roi;
 
-    // var roi = {"x0": -5071.627079999999, "x1": 4622.530679999998, "y0": -6427.59084, "y1": 221.184},
-    //     img = [262144, 179792];
-
     var a = img[0] / (roi.x1 - roi.x0),
         b = -img[0] / (roi.x1 - roi.x0) * roi.x0,
         c = img[1] / (roi.y1 - roi.y0),
