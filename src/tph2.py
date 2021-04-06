@@ -97,21 +97,7 @@ def load_data():
 def transformation(bbox, img):
     """
     Converts micron coordinates to pixel coordinates
-    :param cgf:
-    :return:
     """
-    # with open(cgf['manifest']) as f:
-    #     settings = json.load(f)
-    #
-    # # bounding box in microns
-    # bbox = {'x0': settings['bbox_microns'][0],
-    #         'x1': settings['bbox_microns'][2],
-    #         'y0': settings['bbox_microns'][1],
-    #         'y1': settings['bbox_microns'][3]}
-    #
-    # # image width and height in pixels
-    # img = {'width': settings['mosaic_width_pixels'],
-    #        'height': settings['mosaic_height_pixels']}
 
     # Affine transformation: a set of coefficients a, b, c, d for transforming
     # a point of a form (x, y) into (a*x + b, c*y + d)
@@ -123,17 +109,6 @@ def transformation(bbox, img):
     tx = lambda x: a * x + b
     ty = lambda y: c * y + d
     return tx, ty
-
-
-def crs(z, img):
-    """
-    coordinate system transform
-    :param z:
-    :return:
-    """
-    map_size = map_size(z)
-    factor = map_size / max(img['width'], img['height'])
-    return factor
 
 
 def proj_factor(z, img):
@@ -149,7 +124,7 @@ def proj_factor(z, img):
     return factor
 
 
-def master_tile(data, img, z):
+def master_tile(data, img, z, dot_size=None):
     """
     makes the map at zoom level = z to be broken down into tiles
     :param zoom_level:
@@ -162,7 +137,8 @@ def master_tile(data, img, z):
     scene = ds.Canvas(x_range=[0, dim], y_range=[0, dim], plot_width=dim, plot_height=dim)
     aggregation = scene.points(proj_data, 'x', 'y')
     image = tf.shade(aggregation, cmap=["#FF0000"], alpha=100)
-    # image = tf.spread(image, px=1, shape='circle', name="spread square")
+    if dot_size:
+        image = tf.spread(image, px=1, shape='circle', name="spread square")
     export_image(image, 'master_tile', background=None)
     return image
 
@@ -180,15 +156,12 @@ def manifest(cfg):
     # image width and height in pixels
     img_shape = {'width': settings['mosaic_width_pixels'],
                  'height': settings['mosaic_height_pixels']}
-
     return bbox, img_shape
 
 
-
-def main(gene, z):
+def tile_generator(gene, z):
     cfg = config.DEFAULT
     bbox, img_shape = manifest(cfg)
-    # size_px = map_size(z)
     Tph2_data = load_data()
     tx, ty = transformation(bbox, img_shape)
     _x = Tph2_data.global_x.apply(tx).values
@@ -198,56 +171,11 @@ def main(gene, z):
     mt = master_tile(point_px, img_shape, z)
 
     tile_maker(z, 'pyramid', 'master_tile.png', z_depth='one')
-    print('ok')
-
 
 
 if __name__ == "__main__":
-    main('gene', 1)
+    tile_generator('gene', 1)
 
-    # export = partial(export_image, background=None)
-    cfg = config.DEFAULT
-
-    # 1. Load the data
-    Tph2_data = load_data()
-    # print(Tph2_data.head())
-    # Tph2_data = [-59, 2755]
-    # Tph2_data = [4622.530679999998, 221.184]
-
-
-    # 2. convert to pixel coords
-    tx, ty = transformation(bbox, img)
-    _x = Tph2_data.global_x.apply(tx).values
-    _y = Tph2_data.global_y.apply(ty).values
-    point_px = pd.DataFrame({'x': _x,
-                            'y': _y})
-
-    main('gene', 1)
-    master_tile(point_px, img_shape, 1)
-
-    # 3.For each zoom level project the pixel coords to the map
-    max_z = 8
-    out = [point_px * proj_coords(z, img) for z in range(max_z)]
-
-    # 4 do the tiles
-    # data = pd.DataFrame({
-    #     'x': [0, 0,   256, 256, 256/2],
-    #     'y': [0, 256, 0, 256, 256/2],
-    # })
-    data = pd.DataFrame({
-        'x': [256, 256/2],
-        'y': [256, 256/2],
-    })
-    # data = pd.DataFrame({
-    #     'x': [256],
-    #     'y': [256],
-    # })
-    offset = np.array([256, 256])
-    scene = ds.Canvas(x_range=[0, 256], y_range=[0, 256], plot_width=256, plot_height=256)
-    aggregation = scene.points(data, 'x', 'y')
-    image = tf.shade(aggregation, cmap=["#FF0000"], alpha=255)
-    out = tf.spread(image, px=10, shape='circle', name="spread square")
-    export_image(out, 'my_tile_z0', background=None)
 
     print('ok')
 
