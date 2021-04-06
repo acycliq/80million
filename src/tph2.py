@@ -164,7 +164,7 @@ def get_color(gene):
     return hex
 
 
-def tile_generator(gene, dot_color, z):
+def tile_generator(gene, dot_color, z, dot_size=None):
     cfg = config.DEFAULT
     bbox, img_shape = manifest(cfg)
     Tph2_data = load_data()
@@ -173,7 +173,7 @@ def tile_generator(gene, dot_color, z):
     _y = Tph2_data.global_y.apply(ty).values
     point_px = pd.DataFrame({'x': _x,
                              'y': _y})
-    mt = master_tile(point_px, img_shape, dot_color, z)
+    mt = master_tile(point_px, img_shape, dot_color, z, dot_size)
 
     tile_maker(z, 'pyramid', 'master_tile.png', z_depth='one')
 
@@ -184,7 +184,7 @@ if __name__ == "__main__":
 
     gene = 'Tph2'
     hex_code = get_color(gene)
-    tile_generator(gene, "#00FF00", 1)
+    tile_generator(gene, "#0000FF", 1, 3)
 
 
     print('ok')
