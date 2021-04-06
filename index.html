@@ -3,78 +3,39 @@
 <head>
     <meta charset="utf-8">
     <title>80 million</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"/>
-    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
-    <style>
-        html, body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            font-family: sans-serif;
-        }
 
-        #mymap {
-            width: 100%;
-            height: 100%;
-            background-color: #000000;
-        }
-    </style>
+    <!-- leaflet v 1.0.3 -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet-src.js"></script>
+
+    <!-- user js scripts -->
+    <script> console.log('reading source files')</script>
+    <script src='viewer/js/config.js'></script>
+    <script src='viewer/js/dapi.js'></script>
+
+    <link rel='stylesheet' href='viewer/css/index.css'>
+    <script src='viewer/js/index.js'></script>
+
+<!--    <style>-->
+<!--        html, body {-->
+<!--            margin: 0;-->
+<!--            padding: 0;-->
+<!--            width: 100%;-->
+<!--            height: 100%;-->
+<!--            font-family: sans-serif;-->
+<!--        }-->
+
+<!--        #mymap {-->
+<!--            width: 100%;-->
+<!--            height: 100%;-->
+<!--            background-color: #000000;-->
+<!--        }-->
+<!--    </style>-->
 </head>
 <body>
 <div id="mymap"></div>
 <script>
-
-
-    var roi = {"x0": -5071.627079999999, "x1": 4622.530679999998, "y0": -6427.59084, "y1": 221.184 },
-        img = [262144, 179792];
-
-    var a = img[0] / (roi.x1 - roi.x0),
-        b = -img[0] / (roi.x1 - roi.x0) * roi.x0,
-        c = img[1] / (roi.y1 - roi.y0),
-        d = -img[1] / (roi.y1 - roi.y0) * roi.y0;
-
-    // This transformation maps a point from the roi domain to the domain defined by [0,0] amd [img[0], img[1]].
-    var t = new L.Transformation(a, b, c, d);
-
-    // The transformation in this CRS maps the the top left corner to (0,0) and the bottom right to (256, 256)
-    L.CRS.MySimple = L.extend({}, L.CRS.Simple, {
-        transformation: new L.Transformation(1 / 1024, 0, 1 / 1024, 0),
-    });
-
-
-    var map_tiles = 'https://raw.githubusercontent.com/acycliq/VS6_MsBrain_A3_maptiles/master/maptiles/262144px/z3/{z}/{y}/{x}.jpg';
-
-    var minZoom = 0,
-        maxZoom = 8;
-    var dapiLayer = L.tileLayer(map_tiles, {minZoom: minZoom, maxZoom: maxZoom});
-    var Tph2Layer = L.tileLayer('./src/pyramid/Tph2/{z}/{y}/{x}.png', {minZoom: minZoom, maxZoom: maxZoom});
-    var Slc1a2Layer = L.tileLayer('./src/pyramid/Slc1a2/{z}/{y}/{x}.png', {minZoom: minZoom, maxZoom: maxZoom});
-    var Nos1Layer = L.tileLayer('./src/pyramid/Nos1/{z}/{y}/{x}.png', {minZoom: minZoom, maxZoom: maxZoom});
-
-    map = L.map('mymap', {
-        layers: [dapiLayer],
-        crs: L.CRS.MySimple,
-        attributionControl: false,
-    }).setView([img[1], img[0] / 2], 2);
-
-    map.addLayer(Tph2Layer);
-    map.addLayer(Slc1a2Layer);
-
-    var baseLayers = {
-        "Dapi image": dapiLayer,
-    };
-
-    var overlayMaps = {
-        "Tph2": Tph2Layer,
-        "Slc1a2": Slc1a2Layer,
-        "Nos1": Nos1Layer,
-
-    };
-
-    L.control.layers(baseLayers, overlayMaps, {collapsed: false}).addTo(map);
-
-
+    document.addEventListener("DOMContentLoaded", run(), false);
 </script>
 </body>
 </html>
