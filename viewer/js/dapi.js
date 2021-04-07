@@ -47,8 +47,8 @@ function dapiChart(config) {
         minZoom = dapiConfig.minZoom,
         maxZoom = dapiConfig.maxZoom;
 
-    var gene_tiles = [],
-        gene_names;
+    // var gene_tiles = [];
+    var gene_names;
 
 
     const repo = (gene) => {
@@ -57,19 +57,29 @@ function dapiChart(config) {
     };
 
     gene_names = glyphSettings().map(d => d.gene);
+    // gene_names.forEach(gene => {
+    //     var d = {};
+    //     d.gene = gene;
+    //     d.tileLayer = L.tileLayer(repo(gene),  {minZoom: minZoom, maxZoom: maxZoom});
+    //     gene_tiles.push(d)
+    // });
+
+    var geneLayers_dict = {};
     gene_names.forEach(gene => {
-        var d = {};
-        d.gene = gene;
-        d.tileLayer = L.tileLayer(repo(gene),  {minZoom: minZoom, maxZoom: maxZoom});
-        gene_tiles.push(d)
+        geneLayers_dict[gene] = L.tileLayer(repo(gene),  {minZoom: minZoom, maxZoom: maxZoom});
     });
 
     var Tph2Layer = L.tileLayer('./src/pyramid/Tph2/{z}/{y}/{x}.png', {minZoom: minZoom, maxZoom: maxZoom});
     var Slc1a2Layer = L.tileLayer('./src/pyramid/Slc1a2/{z}/{y}/{x}.png', {minZoom: minZoom, maxZoom: maxZoom});
     var Nos1Layer = L.tileLayer('./src/pyramid/Nos1/{z}/{y}/{x}.png', {minZoom: minZoom, maxZoom: maxZoom});
 
-    map.addLayer(Tph2Layer);
-    map.addLayer(Slc1a2Layer);
+    // map.addLayer(Tph2Layer);
+    // map.addLayer(Slc1a2Layer);
+    // map.addLayer(Nos1Layer);
+
+    gene_names.forEach(gene => {
+        // map.addLayer(geneLayers_dict[gene])
+    })
 
     // var baseLayers = {
     //     "Dapi image": dapiLayer,
@@ -82,8 +92,8 @@ function dapiChart(config) {
     //
     // };
 
-    var overlayMaps = Object.assign({}, ...gene_tiles.map((x) => ({[x.gene]: x.tileLayer})));
-    L.control.layers({}, overlayMaps, {collapsed: false}).addTo(map);
+    // var overlayMaps = Object.assign({}, ...gene_tiles.map((x) => ({[x.gene]: x.tileLayer})));
+    L.control.layers({}, geneLayers_dict, {collapsed: false}).addTo(map);
 
 }
 
