@@ -52,8 +52,8 @@ function dapiChart(config) {
 
 
     const repo = (gene) => {
-        // return "https://raw.githubusercontent.com/acycliq/gene_tiles/master/" + gene + "/{z}/{y}/{x}.png"
-        return "./src/pyramid/" + gene + "/{z}/{y}/{x}.png"
+        return "https://raw.githubusercontent.com/acycliq/gene_tiles/master/" + gene + "/{z}/{y}/{x}.png"
+        // return "./src/pyramid/" + gene + "/{z}/{y}/{x}.png"
     };
 
     gene_names = glyphSettings().map(d => d.gene);
