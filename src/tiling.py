@@ -70,13 +70,14 @@ def tile_maker(zoom_levels, out_dir, img_path, z_depth='onetile'):
     return pixel_dims
 
 
-def load_data(gene, cfg):
+def load_data(cfg, gene=None):
     spots_path = cfg['detected_transcripts']
     logger.info('Reading raw data from %s' % spots_path)
     chunks = pd.read_csv(spots_path, chunksize=100000)
     data = pd.concat(chunks)
-    gene_data = data[data.gene == gene][['gene', 'global_x', 'global_y']]
-    return gene_data
+    if gene:
+        data = data[data.gene == gene][['gene', 'global_x', 'global_y']]
+    return data[['gene', 'global_x', 'global_y']]
 
 
 def transformation(bbox, img):
@@ -154,11 +155,12 @@ def get_genes(glyphsConfig):
     return sorted(gene_list)
 
 
-def tile_generator(gene, opts, z):
+def tile_generator(gene, data, opts, z):
     target_dir = os.path.join(config.ROOT, 'src', 'pyramid', gene)
     cfg = config.DEFAULT
     bbox, img_shape = manifest(cfg)
-    gene_data = load_data(gene, cfg)
+    gene_data = data[data.gene == gene]
+    # gene_data = load_data(cfg, gene)
     tx, ty = transformation(bbox, img_shape)
     _x = gene_data.global_x.apply(tx).values
     _y = gene_data.global_y.apply(ty).values
@@ -193,6 +195,9 @@ if __name__ == "__main__":
     with open(glyph_json) as f:
         glyphsConfig = json.load(f)
 
+    # 1. load the data
+    all_data = load_data(config.DEFAULT)
+
     # gene = 'Tph2'
     # gene = 'Nos1'
     gene = 'Slc1a2'
@@ -205,6 +210,6 @@ if __name__ == "__main__":
                 'dot_color': get_color(gene),
                 'dot_alpha': get_alpha}
         for i in range(8):
-            tile_generator(gene, opts, i)
+            tile_generator(gene, all_data, opts, i)
 
     print('ok')
